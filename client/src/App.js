@@ -39,8 +39,8 @@ function App() {
     
     setSocket(socketInstance);
     
-    socketInstance.on('message', (message) => {
-      setInteractions(i => [...i, message]);
+    socketInstance.on('message', (object) => {
+      setInteractions(i => [...i, object]);
     })
     
     return () => {
@@ -61,39 +61,52 @@ function App() {
       <div id="app-container" className="App-container">
         <Container>
           {
-            interactions.map((message, index) => {
-              if (message.sender === socket.id) {
+            interactions.map((item, index) => {
+              if (item.type === 'text') {
+                if (item.sender === socket.id) {
+                  return (
+                    <Row id={index} key={index} className="mt-3">
+                      <Col md={{ span: 5, offset: 7 }}>
+                        <Card bg="info">
+                          <Card.Body>
+                            <Card.Subtitle className="mb-2 text-muted">
+                              {item.sender}
+                            </Card.Subtitle>
+                            <Card.Text>
+                              {item.text}
+                            </Card.Text>
+                          </Card.Body>
+                        </Card>
+                      </Col>    
+                    </Row>
+                  )
+                } else {
+                  return (
+                    <Row id={index} key={index} className="mt-3">
+                      <Col md={5}>
+                        <Card>
+                          <Card.Body>
+                            <Card.Subtitle className="mb-2 text-muted">
+                              {item.sender}
+                            </Card.Subtitle>
+                            <Card.Text>
+                              {item.text}
+                            </Card.Text>
+                          </Card.Body>
+                        </Card>
+                      </Col>
+                    </Row>
+                  )
+                }
+              }
+              if (item.type === 'event') {
                 return (
-                  <Row id={index} key={index} className="mt-3">
-                    <Col md={{ span: 5, offset: 7 }}>
-                      <Card bg="info">
-                        <Card.Body>
-                          <Card.Subtitle className="mb-2 text-muted">
-                            {message.sender}
-                          </Card.Subtitle>
-                          <Card.Text>
-                            {message.text}
-                          </Card.Text>
-                        </Card.Body>
-                      </Card>
-                    </Col>    
-                  </Row>
-                )
-              } else {
-                return (
-                  <Row id={index} key={index} className="mt-3">
-                    <Col md={5}>
-                      <Card>
-                        <Card.Body>
-                          <Card.Subtitle className="mb-2 text-muted">
-                            {message.sender}
-                          </Card.Subtitle>
-                          <Card.Text>
-                            {message.text}
-                          </Card.Text>
-                        </Card.Body>
-                      </Card>
-                    </Col>
+                  <Row id={index} key={index} className="justify-content-md-center mt-3">
+                    <Card bg="secondary" text="white">
+                      <Card.Text className="mx-3">
+                        {item.user} {item.event}
+                      </Card.Text>
+                    </Card>
                   </Row>
                 )
               }

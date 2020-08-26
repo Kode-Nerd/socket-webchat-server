@@ -13,15 +13,19 @@ io.on("connect", (socket) => {
   log("a user connected", socket.id);
   const event = {
     type: "event",
+    user: socket.id,
     event: "connected",
-    user: socket.id
+    created: socket.handshake.issued
   }
+  log(event);
+  io.emit("message", event);
 
   socket.on("message", (text) => {
     const message = {
+      type: "text",
       sender: socket.id,
       text,
-      created: socket.handshake.issued,
+      created: socket.handshake.issued
     }
     log(message);
     io.emit("message", message);
@@ -29,6 +33,14 @@ io.on("connect", (socket) => {
 
   socket.on("disconnect", () => {
     log("a user disconnected", socket.id)
+    const event = {
+      type: "event",
+      user: socket.id,
+      event: "disconnected",
+      created: socket.handshake.issued
+    }
+    log(event);
+    io.emit("message", event);
   })
 })
 
