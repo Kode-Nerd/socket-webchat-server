@@ -10,9 +10,9 @@ const log = require(__dirname + "/helpers/log");
 const PORT = process.env.PORT || 3030;
 
 io.on("connect", (socket) => {
-  log("a user connected");
+  log("a user connected", socket.id);
   socket.on("disconnect", () => {
-    log("a user disconnected")
+    log("a user disconnected", socket.id)
   })
 })
 
