@@ -8,12 +8,40 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 
 function App() {
   const [interactions, setInteractions] = useState([]);
-  const [socketid, setSocketid] = useState('');
-  let socket;
+  const [text, setText] = useState('');
+  const [socket, setSocket] = useState(null);
+
+  const sendMessage = (event) => {
+    event.preventDefault();
+    if (!text) {
+      return;
+    }
+
+    socket.emit('message', text);
+    setText('');
+  }
+
+  const handleChange = (event) => {
+    setText(event.target.value);
+  }
   
+  const scrollToEnd = () => {
+    const id = interactions.length - 1;
+    const el = document.getElementById('' + id);
+    const appContainer = document.getElementById("app-container");
+    if (!!el) {
+      appContainer.scrollTo(0, el.offsetTop);
+    }
+  }
+
   useEffect(() => {
     const socketInstance = io('http://localhost:3030');
-    socket = socketInstance;
+    
+    setSocket(socketInstance);
+    
+    socketInstance.on('message', (message) => {
+      setInteractions(i => [...i, message]);
+    })
     
     return () => {
       socket.disconnect();
@@ -21,11 +49,8 @@ function App() {
   }, [])
 
   useEffect(() => {
-    if (socket.id) {
-      console.log(socket.id);
-      localStorage.setItem('socketid', socket);
-    }
-  })
+    scrollToEnd();
+  }, [interactions.length])
 
   return (
     <div className="App">
@@ -33,37 +58,65 @@ function App() {
         <img src={logo} alt="logo" className="App-logo" />
         <h1>React WebChat</h1>
       </div>
-      <div className="App-container">
+      <div id="app-container" className="App-container">
         <Container>
-          <Row className="mt-3">
-            <Col md={5}>
-              <Card body>This is some text within a card body.</Card>
-            </Col>
-          </Row>
-          <Row className="mt-3">
-            <Col md={{ span: 5, offset: 7 }}>
-              <Card bg="info" body>This is some text within a card body.</Card>
-            </Col>    
-          </Row>
-          <Row className="mt-3">
-            <Col md={{ span: 5, offset: 7 }}>
-              <Card bg="info" body>This is some text within a card body.</Card>
-            </Col>    
-          </Row>
+          {
+            interactions.map((message, index) => {
+              if (message.sender === socket.id) {
+                return (
+                  <Row id={index} key={index} className="mt-3">
+                    <Col md={{ span: 5, offset: 7 }}>
+                      <Card bg="info">
+                        <Card.Body>
+                          <Card.Subtitle className="mb-2 text-muted">
+                            {message.sender}
+                          </Card.Subtitle>
+                          <Card.Text>
+                            {message.text}
+                          </Card.Text>
+                        </Card.Body>
+                      </Card>
+                    </Col>    
+                  </Row>
+                )
+              } else {
+                return (
+                  <Row id={index} key={index} className="mt-3">
+                    <Col md={5}>
+                      <Card>
+                        <Card.Body>
+                          <Card.Subtitle className="mb-2 text-muted">
+                            {message.sender}
+                          </Card.Subtitle>
+                          <Card.Text>
+                            {message.text}
+                          </Card.Text>
+                        </Card.Body>
+                      </Card>
+                    </Col>
+                  </Row>
+                )
+              }
+            })
+          }          
         </Container>
       </div>
       <div className="App-footer">
         <Container fluid>
-          <InputGroup className="mb-3">
-            <FormControl
-              placeholder="Write your message here"
-              aria-label="Write your message here"
-              aria-describedby="basic-addon2"
-            />
-            <InputGroup.Append>
-              <Button>Send</Button>
-            </InputGroup.Append>
-          </InputGroup>
+          <form onSubmit={sendMessage}>
+            <InputGroup className="mb-3">
+              <FormControl
+                placeholder="Write your message here"
+                aria-label="Write your message here"
+                aria-describedby="basic-addon2"
+                value={text}
+                onChange={handleChange}
+              />
+              <InputGroup.Append>
+                <Button onClick={sendMessage}>Send</Button>
+              </InputGroup.Append>
+            </InputGroup>
+          </form>
         </Container>
       </div>
     </div>
