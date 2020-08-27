@@ -31,6 +31,15 @@ io.on("connect", (socket) => {
     io.emit("message", message);
   })
 
+  socket.on("typing", (event) => {
+    const typing = {
+      user: socket.id,
+      event
+    }
+    log({ typing });
+    socket.broadcast.emit("typing", typing);
+  })
+
   socket.on("disconnect", () => {
     log("a user disconnected", socket.id)
     const event = {

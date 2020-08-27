@@ -10,27 +10,55 @@ function App() {
   const [interactions, setInteractions] = useState([]);
   const [text, setText] = useState('');
   const [socket, setSocket] = useState(null);
+  const [typing, setTyping] = useState({
+    event: false,
+    user: null
+  });
+  const [userTyping, setUserTyping] = useState(false);
 
   const sendMessage = (event) => {
     event.preventDefault();
+    
     if (!text) {
       return;
     }
 
+    typingOff();
+    
     socket.emit('message', text);
     setText('');
   }
 
   const handleChange = (event) => {
+    typingOn();
+    
     setText(event.target.value);
   }
   
   const scrollToEnd = () => {
     const id = interactions.length - 1;
     const el = document.getElementById('' + id);
-    const appContainer = document.getElementById("app-container");
+    const elTyping = document.getElementById('app-typing');
+    const appContainer = document.getElementById('app-container');
     if (!!el) {
       appContainer.scrollTo(0, el.offsetTop);
+    }
+    if (!!elTyping) {
+      appContainer.scrollTo(0, elTyping.offsetTop);
+    }
+  }
+
+  const typingOff = () => {
+    if (userTyping) {
+      setUserTyping(false);
+      socket.emit('typing', false);
+    }
+  }
+
+  const typingOn = () => {
+    if (!userTyping) {
+      setUserTyping(true);
+      socket.emit('typing', true);
     }
   }
 
@@ -42,6 +70,9 @@ function App() {
     socketInstance.on('message', (object) => {
       setInteractions(i => [...i, object]);
     })
+    socketInstance.on('typing', (object) => {
+      setTyping(object);
+    })
     
     return () => {
       socket.disconnect();
@@ -50,7 +81,7 @@ function App() {
 
   useEffect(() => {
     scrollToEnd();
-  }, [interactions.length])
+  }, [interactions.length, typing])
 
   return (
     <div className="App">
@@ -111,7 +142,13 @@ function App() {
                 )
               }
             })
-          }          
+          }
+          {
+            typing.event &&
+            <Row id="app-typing" className="mt-3">
+              {typing.user} is typing...
+            </Row>
+          }       
         </Container>
       </div>
       <div className="App-footer">
@@ -124,6 +161,7 @@ function App() {
                 aria-describedby="basic-addon2"
                 value={text}
                 onChange={handleChange}
+                onBlur={typingOff}
               />
               <InputGroup.Append>
                 <Button onClick={sendMessage}>Send</Button>
