@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import io from 'socket.io-client';
 import { Container, Row, Col, Card, InputGroup, FormControl, Button } from 'react-bootstrap';
+import * as _ from 'lodash';
 
 import logo from './logo.svg';
 import './App.css';
@@ -29,8 +30,26 @@ function App() {
     setText('');
   }
 
+  const typingOff = () => {
+    if (userTyping) {
+      setUserTyping(false);
+      socket.emit('typing', false);
+    }
+  }
+
+  const typingOn = () => {
+    if (!userTyping) {
+      setUserTyping(true);
+      socket.emit('typing', true);
+    }
+  }
+
+  const delayedTypingOff = _.debounce(typingOff, 5000, { trailing: true }) 
+
   const handleChange = (event) => {
     typingOn();
+
+    delayedTypingOff();
     
     setText(event.target.value);
   }
@@ -45,20 +64,6 @@ function App() {
     }
     if (!!elTyping) {
       appContainer.scrollTo(0, elTyping.offsetTop);
-    }
-  }
-
-  const typingOff = () => {
-    if (userTyping) {
-      setUserTyping(false);
-      socket.emit('typing', false);
-    }
-  }
-
-  const typingOn = () => {
-    if (!userTyping) {
-      setUserTyping(true);
-      socket.emit('typing', true);
     }
   }
 
