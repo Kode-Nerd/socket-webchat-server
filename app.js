@@ -19,7 +19,10 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded());
 app.use(express.static(path.join(__dirname, "public")));
-app.post('/admin/broadcast', (req, res, next) => {
+app.get("/api", (req, res, next) => {
+  res.send({ message: "welcome to Kode-Nerd websocket api" });
+})
+app.post("/admin/broadcast", (req, res, next) => {
   const { text } = req.body;
   const message = {
     type: "text",
@@ -32,7 +35,7 @@ app.post('/admin/broadcast', (req, res, next) => {
 
   res.status(200).send({ message });
 })
-app.post('/admin/typing', (req, res, next) => {
+app.post("/admin/typing", (req, res, next) => {
   const { setting } = req.query;
   const event = setting === "true" ? true : setting === "false" ? false : false;
   const typing = {
