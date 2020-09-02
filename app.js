@@ -1,3 +1,5 @@
+require("dotenv").config();
+
 const express = require("express");
 const http = require("http");
 const socketio = require("socket.io");
@@ -7,7 +9,7 @@ const io = socketio(server);
 
 const log = require(__dirname + "/helpers/log");
 
-const PORT = process.env.PORT || 3030;
+const PORT = process.env.PORT || 80;
 
 io.on("connect", (socket) => {
   log("a user connected", socket.id);
